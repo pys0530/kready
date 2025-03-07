@@ -165,7 +165,7 @@
           - container-selinux
         state: present
         enablerepo: kubernetes
-
+        
     - name: kubelet 서비스 활성화 및 시작
       service:
         name: kubelet
@@ -173,7 +173,7 @@
         enabled: yes
 
 - name: Kubernetes 컨트롤 플레인 초기화 및 인증서 아카이브 생성 (cp1에서 실행)
-  hosts: cp1
+  hosts: master-1
   become: yes
   tasks:
     - name: kubeadm init 실행 (이미 초기화 되어 있으면 건너뜀)
@@ -216,7 +216,7 @@
         flat: yes
 
 - name: cp2, cp3로 인증서 아카이브 배포
-  hosts: cp2:cp3
+  hosts: master-etc
   become: yes
   tasks:
     - name: 컨트롤 노드에서 가져온 인증서 아카이브를 대상 호스트로 복사
