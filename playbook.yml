@@ -184,6 +184,7 @@
         --service-cidr={{ kube_service_cidr }}
         --pod-network-cidr={{ kube_pod_network_cidr }}
         --cri-socket={{ kube_cri_socket }}
+        --skip-phases=addon/kube-proxy
       args:
         creates: /etc/kubernetes/admin.conf
 
