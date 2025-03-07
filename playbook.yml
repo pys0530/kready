@@ -215,7 +215,7 @@
         dest: /tmp/kube-certs.tar.gz
         flat: yes
 
-- name: master-etc로 인증서 배포
+- name: master-etc로 인증서 배포 및 압축 해제
   hosts: master-etc
   become: yes
   tasks:
@@ -231,6 +231,12 @@
       copy:
         src: /tmp/kube-certs.tar.gz
         dest: /etc/kubernetes/pki/kube-certs.tar.gz
+
+    - name: 인증서 아카이브 압축 해제
+      unarchive:
+        src: /etc/kubernetes/pki/kube-certs.tar.gz
+        dest: /etc/kubernetes/pki/
+        remote_src: yes
 
 - name: master-1에서 kubeadm token 생성 및 join 명령어 등록
   hosts: master-1
