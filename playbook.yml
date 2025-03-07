@@ -200,6 +200,7 @@
         owner: "{{ ansible_user_id | default('root') }}"
         group: "{{ ansible_user_gid | default('root') }}"
         mode: '0644'
+        remote_src: yes
 
     - name: /etc/kubernetes/pki 디렉토리에서 인증서 아카이브 생성
       command: tar czvf kube-certs.tar.gz sa.pub sa.key ca.crt ca.key front-proxy-ca.crt front-proxy-ca.key etcd/ca.crt etcd/ca.key
