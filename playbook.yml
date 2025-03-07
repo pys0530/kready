@@ -23,11 +23,12 @@
     - name: 시스템 업데이트
       command: dnf update -y
 
-    - name: net-tools 및 bash-completion 설치
+    - name: net-tools, bash-completion, git 설치
       dnf:
         name:
           - net-tools
           - bash-completion
+          - git
         state: present
 
     - name: /etc/modules-load.d/k8s.conf 파일 생성
