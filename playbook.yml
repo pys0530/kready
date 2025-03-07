@@ -3,6 +3,12 @@
   hosts: all
   become: yes
   tasks:
+    - name: Append local hosts file content to remote /etc/hosts # vi /etc/hosts
+      blockinfile:
+        path: /etc/hosts
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        block: "{{ lookup('file', 'hosts') }}"
+        
     - name: Update all packages (equivalent to 'dnf update -y') # dnf update -y 
       ansible.builtin.dnf:
         name: '*'
