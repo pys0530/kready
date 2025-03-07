@@ -223,3 +223,37 @@
       copy:
         src: /tmp/kube-certs.tar.gz
         dest: "{{ ansible_env.HOME }}/kube-certs.tar.gz"
+
+- name: master-1에서 kubeadm token 생성 및 join 명령어 등록
+  hosts: master-1
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: kubeadm token 생성 및 join 명령어 출력
+      command: kubeadm token create --print-join-command
+      register: join_command_result
+      run_once: true
+
+    - name: join 명령어를 전역 변수로 설정
+      set_fact:
+        kube_join_command: "{{ join_command_result.stdout }}"
+      run_once: true
+
+- name: worker 호스트에서 join 명령 실행
+  hosts: worker
+  become: yes
+  tasks:
+    - name: kubeadm join 명령 실행 (worker)
+      command: "{{ hostvars[groups['master-1'][0]].kube_join_command }}"
+      # 필요시 결과 확인을 위한 register 사용 가능
+      register: join_worker_result
+
+- name: master-etc 호스트에서 --control-plane 옵션 포함 join 명령 실행
+  hosts: master-etc
+  become: yes
+  tasks:
+    - name: kubeadm join 명령 실행 (master-etc, --control-plane 추가)
+      command: "{{ hostvars[groups['master-1'][0]].kube_join_command }} --control-plane"
+      register: join_master_result
+
+
