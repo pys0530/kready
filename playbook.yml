@@ -345,11 +345,11 @@
       args:
         executable: /bin/bash
 
-    - name: Helm install cilium (master-1에서만 실행)
-      hosts: master-1
-      become: yes
-      tasks:
-        - name: Install Cilium with Helm
-          command: helm install cilium cilium/cilium --namespace kube-system --set kubeProxyReplacement=true
-          environment:
-            PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+- name: Helm install cilium (master-1에서만 실행)
+  hosts: master-1
+  become: yes
+  tasks:
+    - name: Install Cilium with Helm
+      command: helm install cilium cilium/cilium --namespace kube-system --set kubeProxyReplacement=true
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
