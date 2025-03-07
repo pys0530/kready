@@ -1,5 +1,0 @@
-kube_control_plane_endpoint: "10.10.200.10"
-kube_apiserver_advertise_address: "10.10.200.10"
-kube_service_cidr: "172.20.0.0/16"
-kube_pod_network_cidr: "172.21.0.0/16"
-kube_cri_socket: "unix:///var/run/crio/crio.sock"
