@@ -3,21 +3,11 @@
   hosts: all
   become: yes
   tasks:
-    - name: /etc/hosts에 로컬 hosts 내용 추가
-      blockinfile:
-        path: /etc/hosts
-        marker: "# {mark} ANSIBLE MANAGED HOSTS ENTRIES"
-        block: |
-          10.10.100.1	mgr.kube.kedu.com
-          10.10.100.10	cp1.kube.kedu.com
-          10.10.100.20	cp2.kube.kedu.com
-          10.10.100.30	cp3.kube.kedu.com
-          10.10.100.40	no1.kube.kedu.com
-          10.10.100.50	no2.kube.kedu.com
-          10.10.100.2	gfs.kube.kedu.com
-          10.10.100.110	gf1.kube.kedu.com
-          10.10.100.120	gf2.kube.kedu.com
-          10.10.100.130	gf3.kube.kedu.com
+- name: /etc/hosts에 로컬 hosts 파일 내용 추가
+  blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} ANSIBLE MANAGED HOSTS ENTRIES"
+    block: "{{ lookup('file', 'hosts') }}"
 
     - name: SELinux 비활성화를 위한 grubby 커널 인수 업데이트
       command: grubby --update-kernel ALL --args selinux=0
