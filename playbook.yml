@@ -179,11 +179,11 @@
     - name: kubeadm init 실행 (이미 초기화 되어 있으면 건너뜀)
       command: >
         kubeadm init
-        --control-plane-endpoint=10.10.100.10
-        --apiserver-advertise-address=10.10.100.10
-        --service-cidr=172.20.0.0/16
-        --pod-network-cidr=172.21.0.0/16
-        --cri-socket=unix:///var/run/crio/crio.sock
+        --control-plane-endpoint={{ kube_control_plane_endpoint }}
+        --apiserver-advertise-address={{ kube_apiserver_advertise_address }}
+        --service-cidr={{ kube_service_cidr }}
+        --pod-network-cidr={{ kube_pod_network_cidr }}
+        --cri-socket={{ kube_cri_socket }}
       args:
         creates: /etc/kubernetes/admin.conf
 
