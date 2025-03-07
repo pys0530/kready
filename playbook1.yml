@@ -1,0 +1,240 @@
+---
+- name: 공통 시스템 설정
+  hosts: all
+  become: yes
+  tasks:
+    - name: /etc/hosts에 로컬 hosts 내용 추가
+      blockinfile:
+        path: /etc/hosts
+        marker: "# {mark} ANSIBLE MANAGED HOSTS ENTRIES"
+        block: |
+          10.10.100.1	mgr.kube.kedu.com
+          10.10.100.10	cp1.kube.kedu.com
+          10.10.100.20	cp2.kube.kedu.com
+          10.10.100.30	cp3.kube.kedu.com
+          10.10.100.40	no1.kube.kedu.com
+          10.10.100.50	no2.kube.kedu.com
+          10.10.100.2	gfs.kube.kedu.com
+          10.10.100.110	gf1.kube.kedu.com
+          10.10.100.120	gf2.kube.kedu.com
+          10.10.100.130	gf3.kube.kedu.com
+
+    - name: SELinux 비활성화를 위한 grubby 커널 인수 업데이트
+      command: grubby --update-kernel ALL --args selinux=0
+
+    - name: CRB 저장소 활성화
+      command: dnf config-manager --set-enabled crb
+
+    - name: epel-release 설치
+      dnf:
+        name: epel-release
+        state: present
+
+    - name: 시스템 업데이트
+      command: dnf update -y
+
+    - name: net-tools 및 bash-completion 설치
+      dnf:
+        name:
+          - net-tools
+          - bash-completion
+        state: present
+
+    - name: /etc/modules-load.d/k8s.conf 파일 생성
+      copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          overlay
+          br_netfilter
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: overlay 모듈 로드
+      command: modprobe overlay
+      args:
+        warn: false
+
+    - name: br_netfilter 모듈 로드
+      command: modprobe br_netfilter
+      args:
+        warn: false
+
+    - name: /etc/sysctl.d/k8s.conf 파일 생성
+      copy:
+        dest: /etc/sysctl.d/k8s.conf
+        content: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.ipv4.ip_forward = 1
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: sysctl 설정 적용
+      command: sysctl --system
+
+    - name: sysctl - net.ipv4.ip_forward 값 확인
+      shell: sysctl -a | grep net.ipv4.ip_forward
+      register: ipv4_forward
+      changed_when: false
+
+    - name: sysctl - net.bridge.bridge-nf 값 확인
+      shell: sysctl -a | grep net.bridge.bridge-nf
+      register: bridge_nf
+      changed_when: false
+
+    - name: firewalld 비활성화 및 중지
+      service:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: 스왑(off) 비활성화
+      command: swapoff -a
+
+    - name: /etc/fstab 파일에서 swap 항목 주석 처리
+      lineinfile:
+        path: /etc/fstab
+        regexp: '(^.*\sswap\s.*$)'
+        line: '# \1'
+        backrefs: yes
+
+    - name: 타임존 Asia/Seoul로 설정
+      timezone:
+        name: Asia/Seoul
+
+    - name: chrony 설치
+      dnf:
+        name: chrony
+        state: present
+
+    - name: /etc/chrony.conf 파일 내 pool 라인 주석 처리
+      replace:
+        path: /etc/chrony.conf
+        regexp: '^(pool.*)$'
+        replace: '#\1'
+        backup: yes
+
+    - name: /etc/chrony.conf 파일 내 server 라인 주석 처리
+      replace:
+        path: /etc/chrony.conf
+        regexp: '^(server.*)$'
+        replace: '#\1'
+        backup: yes
+
+    - name: chrony 서버 추가 블록 삽입
+      blockinfile:
+        path: /etc/chrony.conf
+        marker: "# {mark} ANSIBLE MANAGED CHRONY SERVERS"
+        block: |
+          server time.bora.net
+          server time.google.com
+
+    - name: centos-release-okd-4.16 설치
+      dnf:
+        name: centos-release-okd-4.16
+        state: present
+
+    - name: CentOS-OKD-4.16 repo 파일에서 enabled=1 을 enabled=0 으로 변경
+      replace:
+        path: /etc/yum.repos.d/CentOS-OKD-4.16.repo
+        regexp: 'enabled\s*=\s*1'
+        replace: 'enabled=0'
+        backup: yes
+
+    - name: cri-o 설치 (centos-okd-4.16 repo 사용)
+      dnf:
+        name: cri-o
+        state: present
+        enablerepo: centos-okd-4.16
+
+    - name: crio 서비스 활성화 및 시작
+      service:
+        name: crio
+        state: started
+        enabled: yes
+
+    - name: /etc/yum.repos.d/kubernetes.repo 파일 생성
+      copy:
+        dest: /etc/yum.repos.d/kubernetes.repo
+        content: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/
+          enabled=0
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/repodata/repomd.xml.key
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: kubeadm, kubectl, kubelet, cri-tools, iproute-tc, container-selinux 설치 (kubernetes repo 사용)
+      dnf:
+        name:
+          - kubeadm
+          - kubectl
+          - kubelet
+          - cri-tools
+          - iproute-tc
+          - container-selinux
+        state: present
+        enablerepo: kubernetes
+
+    - name: kubelet 서비스 활성화 및 시작
+      service:
+        name: kubelet
+        state: started
+        enabled: yes
+
+- name: Kubernetes 컨트롤 플레인 초기화 및 인증서 아카이브 생성 (cp1에서 실행)
+  hosts: cp1
+  become: yes
+  tasks:
+    - name: kubeadm init 실행 (이미 초기화 되어 있으면 건너뜀)
+      command: >
+        kubeadm init
+        --control-plane-endpoint=10.10.100.10
+        --apiserver-advertise-address=10.10.100.10
+        --service-cidr=172.20.0.0/16
+        --pod-network-cidr=172.21.0.0/16
+        --cri-socket=unix:///var/run/crio/crio.sock
+      args:
+        creates: /etc/kubernetes/admin.conf
+
+    - name: 사용자 .kube 디렉토리 생성
+      file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user_id | default('root') }}"
+        group: "{{ ansible_user_gid | default('root') }}"
+
+    - name: admin.conf를 사용자 kube config로 복사
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ ansible_env.HOME }}/.kube/config"
+        owner: "{{ ansible_user_id | default('root') }}"
+        group: "{{ ansible_user_gid | default('root') }}"
+        mode: '0644'
+
+    - name: /etc/kubernetes/pki 디렉토리에서 인증서 아카이브 생성
+      command: tar czvf kube-certs.tar.gz sa.pub sa.key ca.crt ca.key front-proxy-ca.crt front-proxy-ca.key etcd/ca.crt etcd/ca.key
+      args:
+        chdir: /etc/kubernetes/pki
+        creates: /etc/kubernetes/pki/kube-certs.tar.gz
+
+    - name: 생성된 인증서 아카이브를 컨트롤 노드로 가져오기
+      fetch:
+        src: /etc/kubernetes/pki/kube-certs.tar.gz
+        dest: /tmp/kube-certs.tar.gz
+        flat: yes
+
+- name: cp2, cp3로 인증서 아카이브 배포
+  hosts: cp2:cp3
+  become: yes
+  tasks:
+    - name: 컨트롤 노드에서 가져온 인증서 아카이브를 대상 호스트로 복사
+      copy:
+        src: /tmp/kube-certs.tar.gz
+        dest: "{{ ansible_env.HOME }}/kube-certs.tar.gz"
