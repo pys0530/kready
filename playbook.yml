@@ -306,15 +306,17 @@
         dest: /tmp/get_helm.sh
         mode: '0700'
 
-    - name: Helm 사전 설치 확인
+    - name: Helm 사전 설치 확인 (PATH 환경변수 포함)
       command: which helm
       register: helm_check
       ignore_errors: yes
-      
-    - name: Helm 설치
-      shell: /tmp/get_helm.sh
-      args:
-        executable: /bin/bash
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+
+    - name: Helm 설치 (PATH 환경변수 포함)
+      command: /tmp/get_helm.sh
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
       when: helm_check.rc != 0
 
     - name: kubectl completion bash 소스 라인 추가 (.bashrc)
