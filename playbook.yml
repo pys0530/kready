@@ -281,6 +281,20 @@
       when: not kubelet_conf.stat.exists
       register: join_master_result
 
+- name: Update PATH in /root/.bashrc
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure PATH is set correctly in /root/.bashrc
+      lineinfile:
+        path: /root/.bashrc
+        line: 'export PATH=$PATH:/usr/local/bin'
+        create: yes
+      register: bashrc_updated
+
+    - name: Apply changes by sourcing /root/.bashrc
+      shell: source /root/.bashrc
+      when: bashrc_updated.changed
 
 - name: master-1 및 master-etc에서 helm 설치 스크립트 및 환경 설정
   hosts: master-1:master-etc
