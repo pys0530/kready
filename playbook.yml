@@ -42,13 +42,9 @@
 
     - name: overlay 모듈 로드
       command: modprobe overlay
-      args:
-        warn: false
 
     - name: br_netfilter 모듈 로드
       command: modprobe br_netfilter
-      args:
-        warn: false
 
     - name: /etc/sysctl.d/k8s.conf 파일 생성
       copy:
