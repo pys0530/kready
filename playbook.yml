@@ -269,3 +269,51 @@
     - name: kubeadm join 명령 실행 (master-etc, --control-plane 추가)
       command: "{{ hostvars[groups['master-1'][0]].kube_join_command }} --control-plane"
       register: join_master_result
+
+- name: master-1 및 master-etc에서 helm 설치 스크립트 및 환경 설정
+  hosts: master-1:master-etc
+  become: yes
+  tasks:
+    - name: get_helm.sh 스크립트 다운로드
+      get_url:
+        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        dest: /tmp/get_helm.sh
+        mode: '0700'
+
+    - name: get_helm.sh 스크립트 실행 (Helm 설치)
+      shell: /tmp/get_helm.sh
+      args:
+        executable: /bin/bash
+
+    - name: kubectl completion bash 소스 라인 추가 (.bashrc)
+      lineinfile:
+        dest: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'source <(kubectl completion bash)'
+        create: yes
+        state: present
+
+    - name: kubectl alias 추가 (.bashrc)
+      lineinfile:
+        dest: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'alias k=kubectl'
+        create: yes
+        state: present
+
+    - name: kubectl completion alias 추가 (.bashrc)
+      lineinfile:
+        dest: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'complete -o default -F __start_kubectl k'
+        create: yes
+        state: present
+
+    - name: .bashrc 재적용 (필요 시)
+      shell: source {{ ansible_env.HOME }}/.bashrc
+      args:
+        executable: /bin/bash
+
+    - name: Helm install cilium (master-1에서만 실행)
+      shell: helm install cilium cilium/cilium --namespace kube-system --set kubeProxyReplacement=true
+      args:
+        executable: /bin/bash
+      when: inventory_hostname in groups['master-1']
+
