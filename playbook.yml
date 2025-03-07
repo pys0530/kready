@@ -219,10 +219,18 @@
   hosts: master-etc
   become: yes
   tasks:
+    - name: /etc/kubernetes/pki 디렉토리 생성
+      file:
+        path: /etc/kubernetes/pki
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
     - name: 컨트롤 노드에서 가져온 인증서 아카이브를 대상 호스트로 복사
       copy:
         src: /tmp/kube-certs.tar.gz
-        dest: "{{ ansible_env.HOME }}/kube-certs.tar.gz"
+        dest: /etc/kubernetes/pki/kube-certs.tar.gz
 
 - name: master-1에서 kubeadm token 생성 및 join 명령어 등록
   hosts: master-1
