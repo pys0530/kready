@@ -257,17 +257,30 @@
   hosts: worker
   become: yes
   tasks:
+    - name: kubeadm join이 이미 실행되었는지 확인
+      stat:
+        path: /etc/kubernetes/kubelet.conf
+      register: kubelet_conf
+
     - name: kubeadm join 명령 실행 (worker)
       command: "{{ hostvars[groups['master-1'][0]].kube_join_command }}"
+      when: not kubelet_conf.stat.exists
       register: join_worker_result
 
 - name: master-etc 호스트에서 --control-plane 옵션 포함 join 명령 실행
   hosts: master-etc
   become: yes
   tasks:
+    - name: kubeadm join이 이미 실행되었는지 확인
+      stat:
+        path: /etc/kubernetes/kubelet.conf
+      register: kubelet_conf
+
     - name: kubeadm join 명령 실행 (master-etc, --control-plane 추가)
       command: "{{ hostvars[groups['master-1'][0]].kube_join_command }} --control-plane"
+      when: not kubelet_conf.stat.exists
       register: join_master_result
+
 
 - name: master-1 및 master-etc에서 helm 설치 스크립트 및 환경 설정
   hosts: master-1:master-etc
