@@ -104,11 +104,6 @@
       timezone:
         name: Asia/Seoul
 
-    - name: chrony 설치
-      dnf:
-        name: chrony
-        state: present
-
     - name: /etc/chrony.conf 파일 내 pool 라인 주석 처리
       replace:
         path: /etc/chrony.conf
