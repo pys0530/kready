@@ -242,6 +242,13 @@
         PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
       when: helm_check.rc != 0
 
+    - name: clear alias 추가 (.bashrc)
+      lineinfile:
+        dest: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'alias c=clear'
+        create: yes
+        state: present
+
     - name: kubectl completion bash 소스 라인 추가 (.bashrc)
       lineinfile:
         dest: "{{ ansible_env.HOME }}/.bashrc"
