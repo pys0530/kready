@@ -114,6 +114,11 @@
           server time.bora.net
           server time.google.com
 
+    - name: chronyd 재시작
+      systemd:
+        name: chronyd
+        state: restarted
+
     - name: centos-release-okd-4.16 설치
       dnf:
         name: centos-release-okd-4.16
