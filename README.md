@@ -16,4 +16,5 @@ Ansible을 통한 배포를 기본으로 하며 클러스터에 따라 수정되
   kubeadm으로 들어가는 옵션들에 포함될 정보(POD/Service CIDR, Endpoint IP 등)
 
 ## Deploy Command
-ansible-playbook -i inventory.ini playbook.yml -b --become-user=root
+- (kready 경로에서)
+- ansible-playbook -i inventory.ini playbook.yml -b --become-user=root
