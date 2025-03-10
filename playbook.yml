@@ -290,7 +290,7 @@
         PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
 
     - name: Install Cilium with Helm
-      command: helm install cilium cilium/cilium --namespace kube-system --set kubeProxyReplacement=true
+      command: helm install cilium cilium/cilium --namespace kube-system
       environment:
         PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
 
