@@ -17,8 +17,10 @@ Ansible을 통한 배포를 기본으로 하며 클러스터에 따라 수정되
 
 ## Pre-install
 - dnf install -y git
+- pip install -U pip
+- pip insatll ansible
 
-## clone
+## Clone
 - git clone https://github.com/pys0530/kready.git
 
 ## Deploy Command
