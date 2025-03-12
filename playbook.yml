@@ -218,7 +218,7 @@
         src: /etc/kubernetes/pki/kube-certs.tar.gz
         dest: /tmp/kube-certs.tar.gz
         flat: yes
-        
+
 - name: master-etc에서 master-1의 kube config 복사 및 설정
   hosts: master-etc
   become: yes
@@ -252,7 +252,6 @@
         line: 'export KUBECONFIG="$HOME/.kube/config"'
         create: yes
         state: present
-
 
 - name: master-1 및 master-etc에서 helm 설치 스크립트 및 환경 설정
   hosts: master-1:master-etc
