@@ -218,6 +218,41 @@
         src: /etc/kubernetes/pki/kube-certs.tar.gz
         dest: /tmp/kube-certs.tar.gz
         flat: yes
+        
+- name: master-etc에서 master-1의 kube config 복사 및 설정
+  hosts: master-etc
+  become: yes
+  tasks:
+    - name: $HOME/.kube 디렉토리 생성
+      file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: master-1에서 kube config 파일 가져오기
+      fetch:
+        src: "{{ ansible_env.HOME }}/.kube/config"
+        dest: "/tmp/kube-config-master1"
+        flat: yes
+      delegate_to: master-1
+
+    - name: kube config 파일 복사 및 권한/소유자 설정
+      copy:
+        src: "/tmp/kube-config-master1"
+        dest: "{{ ansible_env.HOME }}/.kube/config"
+        mode: '0644'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: .bashrc에 KUBECONFIG 환경 변수 추가
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'export KUBECONFIG="$HOME/.kube/config"'
+        create: yes
+        state: present
+
 
 - name: master-1 및 master-etc에서 helm 설치 스크립트 및 환경 설정
   hosts: master-1:master-etc
