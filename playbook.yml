@@ -223,17 +223,17 @@
   hosts: master-etc
   become: yes
   tasks:
-    - name: $HOME/.kube 디렉토리 생성
+    - name: /root/.kube 디렉토리 생성
       file:
-        path: "{{ ansible_env.HOME }}/.kube"
+        path: "/root/.kube"
         state: directory
         mode: '0755'
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "root"
+        group: "root"
 
     - name: master-1에서 kube config 파일 가져오기
       fetch:
-        src: "{{ ansible_env.HOME }}/.kube/config"
+        src: "/root/.kube/config"
         dest: "/tmp/kube-config-master1"
         flat: yes
       delegate_to: master-1
@@ -241,14 +241,14 @@
     - name: kube config 파일 복사 및 권한/소유자 설정
       copy:
         src: "/tmp/kube-config-master1"
-        dest: "{{ ansible_env.HOME }}/.kube/config"
+        dest: "/root/.kube/config"
         mode: '0644'
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "root"
+        group: "root"
 
     - name: .bashrc에 KUBECONFIG 환경 변수 추가
       lineinfile:
-        path: "{{ ansible_env.HOME }}/.bashrc"
+        path: "/root/.bashrc"
         line: 'export KUBECONFIG="$HOME/.kube/config"'
         create: yes
         state: present
