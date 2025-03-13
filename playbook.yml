@@ -236,7 +236,7 @@
         src: "/root/.kube/config"
         dest: "/tmp/kube-config-master1"
         flat: yes
-      delegate_to: master-1
+      delegate_to: "{{ groups['master-1'][0] }}"
 
     - name: kube config 파일 복사 및 권한/소유자 설정
       copy:
