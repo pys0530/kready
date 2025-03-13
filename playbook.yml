@@ -183,7 +183,6 @@
       command: >
         kubeadm init
         --control-plane-endpoint={{ kube_control_plane_endpoint }}
-        --apiserver-advertise-address={{ kube_apiserver_advertise_address }}
         --service-cidr={{ kube_service_cidr }}
         --pod-network-cidr={{ kube_pod_network_cidr }}
         --cri-socket={{ kube_cri_socket }}
