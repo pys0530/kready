@@ -1,4 +1,4 @@
-# kready v0.01
+# kready v0.10
 
 ## Introduction
 kready는 kubeadm을 활용한 기본적인 Kubernetes 클러스터 배포를 위한 툴로서 아래 툴들로 이루어져있습니다.
