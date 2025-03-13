@@ -21,11 +21,6 @@ Haproxy / Keepalived를 통한 Kubeadm HA 및 Haproxy HA 구성
 - keepalived/keepalived.conf.master -> Keepalived 마스터 서버에 keepalived.conf 로 이름 변경하여 저장
 - keepalived/keepalived.conf.backup -> Keepalived 백업 서버에 keepalived.conf 로 이름 변경하여 저장
 
-## Pre-install
-- dnf install -y git
-- pip install -U pip
-- pip install ansible
-
 ## Clone
 - git clone https://github.com/pys0530/kready.git
 
